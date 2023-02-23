@@ -16,12 +16,12 @@ class Test(unittest.TestCase):
             print(uid, name)
             self.assertFalse(uid in self.user_id, uid)
             self.user_id.append(uid)
-        print('\nFinish set_name test\n\n\n')
+        print('\nFinish set_name test\n\n')
 
     # test case function to check the Students.get_name function
     def test_1_get_name(self):
 
-        print('\rStart get_name test\n')
+        print('Start get_name test\n')
         print(f'user_id length =  {len(self.user_id)}')
         print(f'user_name length =  {len(self.user_name)}\n')
 
@@ -33,4 +33,4 @@ class Test(unittest.TestCase):
             mex = mex + 1
         self.assertEqual(self.students.get_name(mex), 'There is no such user')
         print(f'id {uid} : There is no such user')
-        print('\nFinish get_name test', end='', flush=True)
+        print('Finish get_name test')
