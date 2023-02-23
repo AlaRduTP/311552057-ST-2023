@@ -32,5 +32,5 @@ class Test(unittest.TestCase):
         while mex in self.user_id:
             mex = mex + 1
         self.assertEqual(self.students.get_name(mex), 'There is no such user')
-        print(f'id {uid} : There is no such user')
-        print('Finish get_name test')
+        print(f'id {mex} : There is no such user')
+        print('\nFinish get_name test')
