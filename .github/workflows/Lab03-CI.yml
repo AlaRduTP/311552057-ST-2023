@@ -26,4 +26,5 @@ jobs:
         python3 -m unittest calculator_test.py -v
     - name: Test with flake8 
       run: |
+        cd Lab03
         flake8 calculator_test.py
