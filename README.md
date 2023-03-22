@@ -10,3 +10,5 @@ NYCU-Software-Testing-2023
 ![Lab02 CI](https://github.com/AlaRduTP/311552057-ST-2023/actions/workflows/Lab02-CI.yml/badge.svg)
 
 ![Lab03 CI](https://github.com/AlaRduTP/311552057-ST-2023/actions/workflows/Lab03-CI.yml/badge.svg)
+
+![Lab04 CI](https://github.com/AlaRduTP/311552057-ST-2023/actions/workflows/Lab04-CI.yml/badge.svg)
