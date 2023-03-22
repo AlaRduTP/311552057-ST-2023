@@ -1,9 +1,13 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
+
+options = Options()
+options.add_argument('-headless')
 
 # launch browser
-driver = webdriver.Firefox()
+driver = webdriver.Firefox(options=options)
 driver.implicitly_wait(15)
 
 # navigate to NYCU home page (https://www.nycu.edu.tw/)
