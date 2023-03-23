@@ -6,3 +6,16 @@ __pycache__/
 
 # macOS trash
 .DS_Store
+
+# vscode config
+.vscode/
+
+# lab examples
+example/
+
+# files for mac only
+*.mac
+
+# llvm files
+*.so
+*.bc
