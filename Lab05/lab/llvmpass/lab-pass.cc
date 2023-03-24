@@ -54,12 +54,6 @@ bool LabPass::runOnModule(Module &M) {
   ConstantInt * cLevel0 = ConstantInt::get(IntegerType::getInt32Ty(ctx), 0);
   gvLevel->setInitializer(cLevel0);
 
-  GlobalVariable * gvLoop = new GlobalVariable(M, IntegerType::getInt32Ty(ctx), false,
-    GlobalValue::CommonLinkage, 0, "loop");
-
-  ConstantInt * cLoop0 = ConstantInt::get(IntegerType::getInt32Ty(ctx), 0);
-  gvLoop->setInitializer(cLoop0);
-
   for (auto &F : M) {
     if (F.empty()) {
       continue;
@@ -73,12 +67,13 @@ bool LabPass::runOnModule(Module &M) {
       IRBuilder<> BuilderStart(&Bstart.front());
 
       Value * vLevel = BuilderStart.CreateLoad(Type::getInt32Ty(ctx), gvLevel);
-      Value * aLevel = BuilderStart.CreateAdd(BuilderStart.getInt32(1), vLevel);
+      Value * aLevel = BuilderStart.CreateAdd(vLevel, BuilderStart.getInt32(1));
       BuilderStart.CreateStore(aLevel, gvLevel);
-      BuilderStart.CreateStore(aLevel, gvLoop);
+
+      AllocaInst * aiLoop = BuilderStart.CreateAlloca(Type::getInt32Ty(ctx), nullptr, "loop_i");
+      BuilderStart.CreateStore(aLevel, aiLoop);
 
       BasicBlock * Bident = BasicBlock::Create(ctx, "ident", &F, Binfo);
-      IRBuilder<> BuilderIdent(Bident);
 
       Instruction &br = Bstart.back();
       IRBuilder<> BuilderBr(&br);
@@ -86,11 +81,13 @@ bool LabPass::runOnModule(Module &M) {
       BuilderBr.CreateBr(Bident);
       br.eraseFromParent();
 
+      IRBuilder<> BuilderIdent(Bident);
+
       BuilderIdent.CreateCall(printfCallee, { getI8StrVal(M, " ", "ident_space") });
-      Value * vLoop = BuilderIdent.CreateLoad(Type::getInt32Ty(ctx), gvLoop);
-      Value * aLoop = BuilderIdent.CreateSub(vLoop, BuilderIdent.getInt32(1));
-      BuilderIdent.CreateStore(aLoop, gvLoop);
-      Value * eq = BuilderIdent.CreateICmpEQ(aLoop, BuilderIdent.getInt32(0));
+      Value * vLoop = BuilderIdent.CreateLoad(Type::getInt32Ty(ctx), aiLoop);
+      Value * sLoop = BuilderIdent.CreateSub(vLoop, BuilderIdent.getInt32(1));
+      BuilderIdent.CreateStore(sLoop, aiLoop);
+      Value * eq = BuilderIdent.CreateICmpEQ(sLoop, BuilderIdent.getInt32(0));
       BuilderIdent.CreateCondBr(eq, Binfo, Bident);
     }
 
