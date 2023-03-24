@@ -48,9 +48,9 @@ bool LabPass::runOnModule(Module &M) {
   LLVMContext &ctx = M.getContext();
   FunctionCallee printfCallee = printfPrototype(M);
 
+  // allocate a global variable as a call stack level counter
   GlobalVariable * gvLevel = new GlobalVariable(M, IntegerType::getInt32Ty(ctx), false,
     GlobalValue::CommonLinkage, 0, "level");
-
   ConstantInt * cLevel0 = ConstantInt::get(IntegerType::getInt32Ty(ctx), 0);
   gvLevel->setInitializer(cLevel0);
 
@@ -66,21 +66,28 @@ bool LabPass::runOnModule(Module &M) {
     if (F.getName() != "main") {
       IRBuilder<> BuilderStart(&Bstart.front());
 
+      // increase call stack level counter at the very beginning
+      // of every function call, except main().
       Value * vLevel = BuilderStart.CreateLoad(Type::getInt32Ty(ctx), gvLevel);
       Value * aLevel = BuilderStart.CreateAdd(vLevel, BuilderStart.getInt32(1));
       BuilderStart.CreateStore(aLevel, gvLevel);
 
+      // allocate a local variable as a loop counter. init with
+      // the value of call stack level counter
       AllocaInst * aiLoop = BuilderStart.CreateAlloca(Type::getInt32Ty(ctx), nullptr, "loop_i");
       BuilderStart.CreateStore(aLevel, aiLoop);
 
+      // create a BB for a loop to print indent
       BasicBlock * Bident = BasicBlock::Create(ctx, "ident", &F, Binfo);
 
+      // find and replace instruction `br info` with `br ident`
       Instruction &br = Bstart.back();
       IRBuilder<> BuilderBr(&br);
 
       BuilderBr.CreateBr(Bident);
       br.eraseFromParent();
 
+      // print ident in a loop
       IRBuilder<> BuilderIdent(Bident);
 
       BuilderIdent.CreateCall(printfCallee, { getI8StrVal(M, " ", "ident_space") });
@@ -89,23 +96,26 @@ bool LabPass::runOnModule(Module &M) {
       BuilderIdent.CreateStore(sLoop, aiLoop);
       Value * eq = BuilderIdent.CreateICmpEQ(sLoop, BuilderIdent.getInt32(0));
       BuilderIdent.CreateCondBr(eq, Binfo, Bident);
+
+      // split a BB contains `ret` only
+      BasicBlock &Bend = F.back();
+      BasicBlock * Bret = Bend.splitBasicBlock(&Bend.back(), "ret");
+
+      // decreace call stack level counter just before return
+      IRBuilder<> BuilderRet(&Bret->front());
+
+      vLevel = BuilderRet.CreateLoad(Type::getInt32Ty(ctx), gvLevel);
+      aLevel = BuilderRet.CreateSub(vLevel, BuilderRet.getInt32(1));
+      BuilderRet.CreateStore(aLevel, gvLevel);
     }
 
+    // print the function name and address
     IRBuilder<> BuilderInfo(&Binfo->front());
 
     Constant * cFFmt = getI8StrVal(M, "%s: %014p\n", "f_fmt_" + F.getName());
     Constant * cFName = getI8StrVal(M, F.getName().str().c_str(), "f_name_" + F.getName());
-
-    Constant * fAddr = ConstantExpr::getBitCast(&F, Type::getInt8PtrTy(ctx));
-    BuilderInfo.CreateCall(printfCallee, { cFFmt, cFName, fAddr });
-
-    BasicBlock &Bend = F.back();
-    BasicBlock * Bret = Bend.splitBasicBlock(&Bend.back(), "ret");
-    IRBuilder<> BuilderRet(&Bret->front());
-
-    Value * vLevel = BuilderRet.CreateLoad(Type::getInt32Ty(ctx), gvLevel);
-    Value * aLevel = BuilderRet.CreateSub(vLevel, BuilderRet.getInt32(1));
-    BuilderRet.CreateStore(aLevel, gvLevel);
+    Constant * cFAddr = ConstantExpr::getBitCast(&F, Type::getInt8PtrTy(ctx));
+    BuilderInfo.CreateCall(printfCallee, { cFFmt, cFName, cFAddr });
   }
 
   return true;
