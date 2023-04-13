@@ -17,16 +17,17 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        cd Midterm
         python -m pip install --upgrade pip
         python -m pip install coverage
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Test with unittest 
+    - name: Q1
       run: |
         cd Midterm
         python3 course_scheduling_system_test.py  -v 1>log.txt
         cat log.txt
-        
-    - name: Test Coverage 
+
+    - name: Q2
       run: |
         cd Midterm
         python3 app.py
