@@ -2,7 +2,7 @@
 
 ## PoC
 
-[FILE](/out/crashes/id:000000,sig:06,src:000000,op:flip1,pos:18)
+[FILE](/Lab07/out/crashes/id:000000,sig:06,src:000000,op:flip1,pos:18)
 
 ```
 $ ./bmpgrayscale out/crashes/id\:000000* a.bmp
@@ -31,8 +31,8 @@ $ ./bmpgrayscale out/crashes/id\:000000* a.bmp
 
 ### fuzzing
 
-![](/Screenshot1.png)
+![](/Lab07/Screenshot1.png)
 
 ### crash
 
-![](/Screenshot2.png)
+![](/Lab07/Screenshot2.png)
